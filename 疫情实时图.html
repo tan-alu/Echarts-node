@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>疫情实时图</title>
+  <!-- 引入 echarts.js -->
+  <script src="./js/echarts.min.js"></script>
+  <script src="./js/china.js"></script>
+</head>
+
+<body>
+  <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+  <div id="main" style="width: 600px;height:400px;"></div>
+  <script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+    // 发起请求，利用fetch()
+    fetch('http://127.0.0.1:8066/api/data').then(res => res.json()) //把得到的可读数据流编程json
+      .then(res => {
+        // console.log(res)
+        var getListByCountryTypeService1 = res.getListByCountryTypeService1
+        // 接口返回数据处理为echarts认可的数据
+        var filterData = []
+        getListByCountryTypeService1.forEach(item => {
+          filterData.push({
+            name: item.provinceName,
+            value: item.confirmedCount,
+            curedCount: item.curedCount,
+            deadCount: item.deadCount
+          })
+        })
+        console.log(filterData)
+        // 指定图表的配置项和数据
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption({
+          title: {
+            text: '全国疫情实时地图',
+            subtext: 'alulul',
+            left: 'center'
+          },
+          backgroundColor: '#f7f7f7',
+          tooltip: {
+            // triggerOn: click,
+            formatter: function (params) {
+              console.log(params, 'formatter')
+              return `地区：${params.name}<br/>确诊：${params.value}<br/>`
+              // return `地区：${params.name}<br/>确诊：${params.value}<br/>治愈：${params.data && params.data.curedCount ||0}<br/>死亡：${params.data?.deadCount||0}`
+            }
+          },
+          series: [{
+            type: 'map',
+            map: 'china', //中国地图
+            label: {
+              show: true,
+              fontsize: '10'
+            },
+            data: filterData
+          }]
+        })
+      })
+  </script>
+</body>
+
+</html>
